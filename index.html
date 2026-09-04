@@ -309,11 +309,21 @@
             GB: { name: "United Kingdom", flag: "🇬🇧" },
             CA: { name: "Canada", flag: "🇨🇦" },
             DE: { name: "Germany", flag: "🇩🇪" },
-            SG: { name: "Singapore", flag: "🇸🇬" },
+            SE: { name: "Sweden", flag: "🇸🇪" },
             AU: { name: "Australia", flag: "🇦🇺" },
+            MY: { name: "Malaysia", flag: "🇲🇾" },
+            ES: { name: "Spain", flag: "🇪🇸" },
+            MX: { name: "Mexico", flag: "🇲🇽" },
             BD: { name: "Bangladesh", flag: "🇧🇩" },
             IN: { name: "India", flag: "🇮🇳" },
-            VN: { name: "Vietnam", flag: "🇻🇳" }
+            VN: { name: "Vietnam", flag: "🇻🇳" },
+            SG: { name: "Singapore", flag: "🇸🇬" },
+            AE: { name: "United Arab Emirates", flag: "🇦🇪" },
+            SA: { name: "Saudi Arabia", flag: "🇸🇦" },
+            JP: { name: "Japan", flag: "🇯🇵" },
+            KR: { name: "South Korea", flag: "🇰🇷" },
+            FR: { name: "France", flag: "🇫🇷" },
+            IT: { name: "Italy", flag: "🇮🇹" }
         };
 
         function getCountryFlag(countryCode) {
@@ -619,11 +629,10 @@
             return `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
         }
 
-        // 🇧🇩 ইউজারের ডিভাইস যে দেশেই থাকুক, সরাসরি "বাংলাদেশ টাইম (Asia/Dhaka)" হিসাব করার লজিক
+        // 🇧🇩 বাংলাদেশ টাইম (Asia/Dhaka) অনুযায়ী কাজ করার সময় হিসাব
         function isWithinWorkingHours(startStr, endStr) {
             if (!startStr || !endStr) return true;
             
-            // বাংলাদেশ কারেন্ট টাইম বের করা
             const now = new Date();
             const bdTimeStr = now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" });
             const bdDate = new Date(bdTimeStr);
@@ -643,7 +652,7 @@
         }
 
         async function watchAd() {
-            // ১. কাজের নির্ধারিত সময় (বাংলাদেশ সময় অনুযায়ী) চেক
+            // ১. কাজের সময়সূচী (বাংলাদেশ সময়) চেক
             if (appConfig.workStartTime && appConfig.workEndTime) {
                 if (!isWithinWorkingHours(appConfig.workStartTime, appConfig.workEndTime)) {
                     showPopup(`
@@ -658,45 +667,59 @@
                 }
             }
 
-            showPopup(`<h3>Checking Connection...</h3><p style="font-size:0.8rem; color:#cbd5e1; margin-top:5px;">Verifying Location & Timezone Security</p><div class="spinner" style="margin:20px auto"></div>`);
+            showPopup(`<h3>Checking Verification...</h3><p style="font-size:0.8rem; color:#cbd5e1; margin-top:5px;">Verifying Timezone & Proxy Security</p><div class="spinner" style="margin:20px auto"></div>`);
             
             try {
                 const ipData = await getIpDetails();
                 const currentCountry = (ipData.country_code || '').toUpperCase();
                 const allowedCountry = (appConfig.allowedCountry || '').trim().toUpperCase();
                 const allowedTimezone = (appConfig.allowedTimezone || '').trim().toLowerCase();
+                const targetFlag = getCountryFlag(allowedCountry);
+                const targetCountryInfo = countryMap[allowedCountry]?.name || allowedCountry;
 
-                // ২. অনুমোদিত কান্ট্রি লক চেক
-                if (allowedCountry && currentCountry !== allowedCountry) {
-                    const blockMessage = `
-                        <h2 style="color: var(--primary-color); margin-bottom: 15px; font-size: 1.15rem;">🚫 লোকেশন অমিল!</h2>
-                        <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); padding: 15px; border-radius: 14px; margin-bottom: 20px; text-align: center; font-size: 0.9rem; line-height: 1.6;">
-                            <p style="color: #ffffff; font-weight: 500;">আপনার বর্তমান লোকেশন (<b>${currentCountry}</b>) থেকে কাজ করা যাবে না।</p>
-                            <p style="color: #f59e0b; font-weight: 700; margin-top: 6px;">কাজ করার জন্য <b>${allowedCountry}</b> লোকেশনে কানেক্ট করুন⚠️</p>
+                // Device / Browser Timezone
+                const userDeviceTz = (Intl.DateTimeFormat().resolvedOptions().timeZone || ipData.timezone || '').toLowerCase();
+
+                // 🔴 ধাপ ১: টাইমজোন চেক (Timezone Verification)
+                if (allowedTimezone && userDeviceTz !== allowedTimezone) {
+                    const tzNotice = `
+                        <h2 style="color: #f59e0b; margin-bottom: 12px; font-size: 1.2rem;">🌐 টাইমজোন পরিবর্তন করুন</h2>
+                        
+                        <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); padding: 15px; border-radius: 14px; margin-bottom: 20px; text-align: left; font-size: 0.88rem; line-height: 1.6;">
+                            <p style="color: #ffffff; font-weight: 600; margin-bottom: 8px;">বিজ্ঞাপন দেখতে হলে আপনার ডিভাইসের টাইমজোন ঠিক করতে হবে!</p>
+                            <p style="color: #cbd5e1;">১. আপনার ফোনের Settings এ যান।</p>
+                            <p style="color: #cbd5e1;">২. Date & Time এ গিয়ে Timezone সিলেক্ট করুন <b>${allowedCountry} (${appConfig.allowedTimezone})</b></p>
+                            <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 0;">
+                            <p style="color: #ef4444; font-size: 0.82rem;">❌ বর্তমান ডিভাইস টাইমজোন: <b>${userDeviceTz}</b></p>
+                            <p style="color: #10b981; font-size: 0.82rem;">✅ প্রয়োজনীয় টাইমজোন: <b>${appConfig.allowedTimezone}</b></p>
                         </div>
-                        <button onclick="closePopup()" class="btn-primary" style="background: var(--danger); color:#fff;">ঠিক আছে</button>
+
+                        <button onclick="closePopup()" class="btn-primary">ঠিক আছে, চেঞ্জ করছি</button>
                     `;
-                    showPopup(blockMessage);
+                    showPopup(tzNotice);
                     return;
                 }
 
-                // ৩. টাইমজোন চেক
-                if (allowedTimezone) {
-                    const clientTz = (ipData.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || '').toLowerCase();
-                    if (clientTz !== allowedTimezone) {
-                        const tzMessage = `
-                            <h2 style="color: var(--primary-color); margin-bottom: 15px; font-size: 1.15rem;">🌐 টাইমজোন অমিল!</h2>
-                            <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); padding: 15px; border-radius: 14px; margin-bottom: 20px; text-align: center; font-size: 0.9rem; line-height: 1.6;">
-                                <p style="color: #ffffff; font-weight: 500;">আপনার ডিভাইসের টাইমজোন অনুমোদিত নয়।</p>
-                                <p style="color: #f59e0b; font-weight: 700; margin-top: 6px;">সঠিকভাবে <b>${appConfig.allowedTimezone}</b> টাইমজোনে কানেক্ট করে কাজ করুন⚠️</p>
-                            </div>
-                            <button onclick="closePopup()" class="btn-primary" style="background: var(--danger); color:#fff;">ঠিক আছে</button>
-                        `;
-                        showPopup(tzMessage);
-                        return;
-                    }
+                // 🔴 ধাপ ২: প্রক্সি / IP লোকেশন চেক (Proxy Verification)
+                if (allowedCountry && currentCountry !== allowedCountry) {
+                    const proxyNotice = `
+                        <h2 style="color: var(--primary-color); margin-bottom: 12px; font-size: 1.2rem;">🛡️ প্রক্সি / VPN কানেক্ট করুন</h2>
+                        
+                        <div style="background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.3); padding: 15px; border-radius: 14px; margin-bottom: 20px; text-align: left; font-size: 0.88rem; line-height: 1.6;">
+                            <p style="color: #ffffff; font-weight: 600; margin-bottom: 8px;">আপনার টাইমজোন ঠিক আছে! এবার IP কানেক্ট করুন:</p>
+                            <p style="color: #cbd5e1;">আপনার VPN বা Proxy তে <b>${targetFlag} ${targetCountryInfo} (${allowedCountry})</b> লোকেশন সিলেক্ট করে Connect করুন।</p>
+                            <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 0;">
+                            <p style="color: #ef4444; font-size: 0.82rem;">❌ বর্তমান IP দেশ: <b>${getCountryFlag(currentCountry)} ${ipData.country_name} (${currentCountry})</b></p>
+                            <p style="color: #10b981; font-size: 0.82rem;">✅ প্রয়োজনীয় দেশ: <b>${targetFlag} ${targetCountryInfo} (${allowedCountry})</b></p>
+                        </div>
+
+                        <button onclick="closePopup()" class="btn-primary" style="background: var(--primary-color); color:#fff;">ঠিক আছে</button>
+                    `;
+                    showPopup(proxyNotice);
+                    return;
                 }
 
+                // 🔴 ধাপ ৩: টাইমজোন এবং IP দুটিই ঠিক থাকলে এড লোড হবে
                 showPopup(`<h3>Loading Ad...</h3><div class="spinner" style="margin:20px auto"></div>`);
                 
                 let p;
