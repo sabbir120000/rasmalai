@@ -375,7 +375,6 @@
             }
         }
 
-        // 🔴 এড নেটওয়ার্ক SDK ডাইনামিক লোডিং লজিক (Monetag সাপোর্টসহ)
         function loadAdSdk() {
             if (isAdSdkLoaded) return;
             const zoneId = (appConfig.adZoneId || '').trim();
@@ -620,10 +619,15 @@
             return `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
         }
 
+        // 🇧🇩 ইউজারের ডিভাইস যে দেশেই থাকুক, সরাসরি "বাংলাদেশ টাইম (Asia/Dhaka)" হিসাব করার লজিক
         function isWithinWorkingHours(startStr, endStr) {
             if (!startStr || !endStr) return true;
+            
+            // বাংলাদেশ কারেন্ট টাইম বের করা
             const now = new Date();
-            const currentMins = now.getHours() * 60 + now.getMinutes();
+            const bdTimeStr = now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" });
+            const bdDate = new Date(bdTimeStr);
+            const currentMins = bdDate.getHours() * 60 + bdDate.getMinutes();
 
             const [sH, sM] = startStr.split(':').map(Number);
             const [eH, eM] = endStr.split(':').map(Number);
@@ -639,14 +643,14 @@
         }
 
         async function watchAd() {
-            // ১. কাজের নির্ধারিত সময় চেক
+            // ১. কাজের নির্ধারিত সময় (বাংলাদেশ সময় অনুযায়ী) চেক
             if (appConfig.workStartTime && appConfig.workEndTime) {
                 if (!isWithinWorkingHours(appConfig.workStartTime, appConfig.workEndTime)) {
                     showPopup(`
                         <h2 style="color: var(--primary-color); margin-bottom: 12px;">⏰ কাজ বন্ধ আছে</h2>
                         <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); padding: 15px; border-radius: 14px; margin-bottom: 20px; text-align: center; font-size: 0.9rem; line-height: 1.6;">
                             <p style="color: #ffffff; font-weight: 500;">বিজ্ঞাপন দেখার কাজের সময় নির্ধারিত করা আছে।</p>
-                            <p style="color: #f59e0b; font-weight: 700; margin-top: 6px;">কাজের সময়: ${formatTime12H(appConfig.workStartTime)} - ${formatTime12H(appConfig.workEndTime)}</p>
+                            <p style="color: #f59e0b; font-weight: 700; margin-top: 6px;">কাজের সময় (বাংলাদেশ সময়): ${formatTime12H(appConfig.workStartTime)} - ${formatTime12H(appConfig.workEndTime)}</p>
                         </div>
                         <button onclick="closePopup()" class="btn-primary">ঠিক আছে</button>
                     `);
@@ -698,7 +702,6 @@
                 let p;
                 const zoneId = (appConfig.adZoneId || '').trim();
 
-                // 🔴 এড নেটওয়ার্ক এক্সিকিউশন (Monetag সহ)
                 if (appConfig.activeAdNetwork === 'adspark') { 
                     if (typeof window.showAdspark !== 'function') throw new Error("Ad not ready yet. Please wait 2-3 seconds."); 
                     p = window.showAdspark({ ymid: tgUser.id ? String(tgUser.id) : undefined }); 
