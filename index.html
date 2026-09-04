@@ -289,7 +289,6 @@
         if (tg.setHeaderColor) tg.setHeaderColor('#0f172a'); 
         if (tg.setBackgroundColor) tg.setBackgroundColor('#0f172a');
 
-        // নতুন ফায়ারবেজ কনফিগ যুক্ত করা হলো
         const firebaseConfig = {
             apiKey: "AIzaSyBbzysjUyh0sH_ePanjmAKp_0rxo77Afg0",
             authDomain: "rasmalai-2f2d7.firebaseapp.com",
@@ -376,15 +375,25 @@
             }
         }
 
+        // 🔴 এড নেটওয়ার্ক SDK ডাইনামিক লোডিং লজিক (Monetag সাপোর্টসহ)
         function loadAdSdk() {
             if (isAdSdkLoaded) return;
-            if (appConfig.activeAdNetwork === 'adspark' && appConfig.adZoneId) {
+            const zoneId = (appConfig.adZoneId || '').trim();
+
+            if (appConfig.activeAdNetwork === 'adspark' && zoneId) {
                 const s = document.createElement('script'); 
-                s.src = `https://lovely-glow-forge.lovable.app/api/public/sdk.js?k=${appConfig.adZoneId}`; 
+                s.src = `https://lovely-glow-forge.lovable.app/api/public/sdk.js?k=${zoneId}`; 
                 document.body.appendChild(s);
                 isAdSdkLoaded = true;
             } else if (appConfig.activeAdNetwork === 'giga' && appConfig.gigaAdScriptUrl) {
                 const s = document.createElement('script'); s.src = appConfig.gigaAdScriptUrl; document.body.appendChild(s);
+                isAdSdkLoaded = true;
+            } else if (appConfig.activeAdNetwork === 'monetag' && zoneId) {
+                const s = document.createElement('script');
+                s.src = 'https://libtl.com/sdk.js';
+                s.setAttribute('data-zone', zoneId);
+                s.setAttribute('data-sdk', 'show_' + zoneId);
+                document.head.appendChild(s);
                 isAdSdkLoaded = true;
             }
         }
@@ -603,7 +612,6 @@
             }
         }
 
-        // টাইম ফরম্যাট করার হেল্পার
         function formatTime12H(timeStr) {
             if (!timeStr) return '';
             let [h, m] = timeStr.split(':').map(Number);
@@ -612,7 +620,6 @@
             return `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
         }
 
-        // কাজের সময় চেক করার লজিক
         function isWithinWorkingHours(startStr, endStr) {
             if (!startStr || !endStr) return true;
             const now = new Date();
@@ -689,6 +696,9 @@
                 showPopup(`<h3>Loading Ad...</h3><div class="spinner" style="margin:20px auto"></div>`);
                 
                 let p;
+                const zoneId = (appConfig.adZoneId || '').trim();
+
+                // 🔴 এড নেটওয়ার্ক এক্সিকিউশন (Monetag সহ)
                 if (appConfig.activeAdNetwork === 'adspark') { 
                     if (typeof window.showAdspark !== 'function') throw new Error("Ad not ready yet. Please wait 2-3 seconds."); 
                     p = window.showAdspark({ ymid: tgUser.id ? String(tgUser.id) : undefined }); 
@@ -696,6 +706,11 @@
                 else if (appConfig.activeAdNetwork === 'giga') { 
                     if (typeof window.showGiga !== 'function') throw new Error("Ad not ready yet. Please wait 2-3 seconds."); 
                     p = window.showGiga(); 
+                }
+                else if (appConfig.activeAdNetwork === 'monetag') {
+                    const monetagFn = 'show_' + zoneId;
+                    if (typeof window[monetagFn] !== 'function') throw new Error("Monetag Ad not ready yet. Please wait 2-3 seconds.");
+                    p = window[monetagFn]();
                 }
                 else throw new Error("Ad Config Error");
                 
