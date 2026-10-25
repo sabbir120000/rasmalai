@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,11 +71,7 @@
             border-radius: 0 0 28px 28px;
             margin-bottom: 8px;
         }
-        .avatar-wrap {
-            position: relative;
-            width: 84px; height: 84px;
-            margin: 0 auto 12px;
-        }
+        .avatar-wrap { position: relative; width: 84px; height: 84px; margin: 0 auto 12px; }
         #user-photo {
             width: 100%; height: 100%;
             border-radius: 50%;
@@ -99,6 +96,52 @@
             font-size: 0.95rem; font-weight: 700;
         }
         .balance-chip span { color: var(--primary); font-size: 1.15rem; font-weight: 800; }
+
+        /* 🔥 REDESIGNED HOME BUTTONS 🔥 */
+        .home-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .home-action-card {
+            background: linear-gradient(135deg, rgba(var(--p-rgb), 0.12) 0%, rgba(18, 24, 38, 0.8) 100%);
+            border: 1px solid rgba(var(--p-rgb), 0.3);
+            border-radius: 16px;
+            padding: 14px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+            text-align: left;
+        }
+        .home-action-card:active { transform: scale(0.97); }
+        .home-action-card.secondary {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(18, 24, 38, 0.8) 100%);
+            border-color: rgba(245, 158, 11, 0.35);
+        }
+        .home-action-icon {
+            width: 38px; height: 38px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(var(--p-rgb), 0.2);
+            color: var(--primary); font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .home-action-card.secondary .home-action-icon {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        .home-action-text {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
         /* Stats Grid */
         .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
@@ -127,7 +170,7 @@
         .progress-track { height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 10px; overflow: hidden; margin-top: 15px; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 10px; transition: width 0.4s; }
 
-        /* High Energy Action Button */
+        /* Ad & Action Buttons */
         .btn-action-ad {
             width: 100%; padding: 18px; border: none; border-radius: 16px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
@@ -149,7 +192,7 @@
         .btn-primary:active { transform: scale(0.98); }
         .btn-primary:disabled { background: #1e293b !important; color: #64748b; box-shadow: none; cursor: not-allowed; }
 
-        /* Dynamic Item List */
+        /* Dynamic Item List & Timed Task Buttons */
         .list-cell {
             display: flex; align-items: center; justify-content: space-between;
             background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
@@ -158,12 +201,33 @@
         }
         .list-cell img { width: 42px; height: 42px; border-radius: 12px; margin-right: 14px; object-fit: cover; }
         .list-cell-info { flex: 1; }
-        .list-cell-info h4 { font-size: 0.98rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
-        .list-cell-info p { font-size: 0.82rem; color: var(--text-sub); }
-        .list-cell .btn-badge {
-            padding: 8px 16px; border-radius: 10px; font-size: 0.82rem;
+        .list-cell-info h4 { font-size: 0.96rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
+        .list-cell-info p { font-size: 0.8rem; color: var(--text-sub); }
+
+        .btn-task {
+            padding: 8px 15px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
+            border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-task.start {
             background: rgba(var(--p-rgb), 0.15); color: var(--primary);
-            border: 1px solid rgba(var(--p-rgb), 0.3); font-weight: 700;
+            border: 1px solid rgba(var(--p-rgb), 0.35);
+        }
+        .btn-task.claim {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #fff; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+            animation: pulse-green 1.5s infinite;
+        }
+        .btn-task.waiting {
+            background: rgba(245, 158, 11, 0.2); color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .btn-task:disabled { background: rgba(255, 255, 255, 0.08); color: #64748b; border: none; cursor: not-allowed; }
+
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         /* Inputs */
@@ -224,7 +288,6 @@
     <div id="popup" class="popup-modal"><div class="modal-card"><button class="modal-close" onclick="closePopup()">&times;</button><div id="popup-body"></div></div></div>
 
     <div id="app">
-        <!-- Top Identity Header -->
         <header class="header-box">
             <div class="avatar-wrap">
                 <img id="user-photo" src="https://via.placeholder.com/80" alt="Avatar">
@@ -237,7 +300,8 @@
         <main>
             <!-- HOME PAGE -->
             <div id="home-page" class="page active">
-                <div id="home-buttons-container" style="margin-bottom: 15px;"></div>
+                <!-- Redesigned Home Action Buttons -->
+                <div id="home-buttons-container"></div>
 
                 <div class="metrics-grid">
                     <div class="metric-box">
@@ -275,10 +339,10 @@
                     <div class="progress-track"><div id="ad-progress-bar" class="progress-fill" style="width: 0%;"></div></div>
                 </div>
 
-                <h3 style="margin: 20px 0 12px; font-size: 1rem; color: #fff;">Watch Ads</h3>
+                <h3 style="margin: 20px 0 12px; font-size: 1rem; color: #fff;">Watch Sponsored Ads</h3>
                 <div id="ad-task-area"></div>
 
-                <h3 style="margin: 24px 0 12px; font-size: 1rem; color: #fff;">Bonus Rewards</h3>
+                <h3 style="margin: 24px 0 12px; font-size: 1rem; color: #fff;">Bonus Rewards & Videos</h3>
                 <div id="bonus-task-area"></div>
             </div>
 
@@ -386,7 +450,6 @@
             IT: { name: "Italy", flag: "🇮🇹" }
         };
 
-        // 🎨 COMPLETE DYNAMIC THEME INJECTOR (Overrides EVERYTHING across the app)
         function hexToRgb(hex) {
             hex = (hex || '#00f2fe').replace('#', '');
             if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -455,17 +518,10 @@
 
                 updateLoader("Connecting Secure Gateway...");
 
-                // Config Listener (Dynamic Theme Trigger)
                 db.ref('config').on('value', (snapshot) => {
                     appConfig = snapshot.val() || {};
-                    
-                    if (appConfig.themeColors) {
-                        applyDynamicTheme(appConfig.themeColors);
-                    }
-
-                    if (!isAdSdkLoaded && (appConfig.adZoneId || appConfig.gigaAdScriptUrl)) {
-                        loadAdSdk();
-                    }
+                    if (appConfig.themeColors) applyDynamicTheme(appConfig.themeColors);
+                    if (!isAdSdkLoaded && (appConfig.adZoneId || appConfig.gigaAdScriptUrl)) loadAdSdk();
                     if (userState.id) renderAll();
                 });
 
@@ -474,9 +530,11 @@
 
                 document.getElementById('loader').style.display = 'none';
                 checkWelcomeMessage();
-
                 loadLeaderboard();
                 loadHistory();
+
+                // Periodic check for tasks timers
+                setInterval(checkActiveTaskTimers, 1000);
 
             } catch (e) {
                 console.error(e);
@@ -605,13 +663,36 @@
             });
         }
 
+        // 🔥 REDESIGNED HOME ACTION BUTTONS
         function renderHomeButtons() {
-            const d = document.getElementById('home-buttons-container'); d.innerHTML = '';
+            const d = document.getElementById('home-buttons-container');
+            d.innerHTML = '';
             const b = appConfig.homeButtons || {};
-            if(b.button1Text) d.innerHTML += `<button onclick="tg.openLink('${b.button1Link}')" class="btn-primary" style="margin-bottom:10px">${b.button1Text}</button>`;
-            if(b.button2Text) d.innerHTML += `<button onclick="tg.openLink('${b.button2Link}')" class="btn-primary" style="background:linear-gradient(90deg, #f59e0b, #ef4444); color:#fff;">${b.button2Text}</button>`;
+            
+            if (b.button1Text || b.button2Text) {
+                let html = '<div class="home-actions-grid">';
+                if (b.button1Text) {
+                    html += `
+                        <div class="home-action-card" onclick="tg.openLink('${b.button1Link}')">
+                            <div class="home-action-icon"><i class="fas fa-paper-plane"></i></div>
+                            <div class="home-action-text">${b.button1Text}</div>
+                        </div>
+                    `;
+                }
+                if (b.button2Text) {
+                    html += `
+                        <div class="home-action-card secondary" onclick="tg.openLink('${b.button2Link}')">
+                            <div class="home-action-icon"><i class="fas fa-fire"></i></div>
+                            <div class="home-action-text">${b.button2Text}</div>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+                d.innerHTML = html;
+            }
         }
 
+        // 🔥 TIMED VIDEO / BONUS TASK SYSTEM
         function renderTasks() {
             const adDiv = document.getElementById('ad-task-area'); const now = Date.now();
             const breakTime = userState.breakUntil && now < userState.breakUntil;
@@ -622,10 +703,119 @@
             else adDiv.innerHTML = `<button class="btn-action-ad" onclick="watchAd()"><i class="fas fa-play"></i> Watch Sponsored Ad & Earn</button>`;
 
             const bDiv = document.getElementById('bonus-task-area'); bDiv.innerHTML = '';
-            if (appConfig.tasks) Object.keys(appConfig.tasks).forEach(k => {
-                const t = appConfig.tasks[k], done = userState.completedTasks && userState.completedTasks[k];
-                bDiv.innerHTML += `<div class="list-cell"><img src="${t.icon}"><div class="list-cell-info"><h4>${t.name}</h4><p>+${t.reward} TK</p></div><button class="btn-badge" ${done?'disabled':''} onclick="doTask('${k}','${t.url}',${t.reward})">${done?'Claimed':'Complete'}</button></div>`;
+            if (appConfig.tasks) {
+                Object.keys(appConfig.tasks).forEach(k => {
+                    const t = appConfig.tasks[k];
+                    const done = userState.completedTasks && userState.completedTasks[k];
+                    const reqSeconds = parseInt(t.timer) || 15;
+                    const session = JSON.parse(localStorage.getItem(`task_session_${k}`) || 'null');
+
+                    let buttonHtml = '';
+                    if (done) {
+                        buttonHtml = `<button class="btn-task" disabled><i class="fas fa-check"></i> Done</button>`;
+                    } else if (session && session.status === 'ready') {
+                        buttonHtml = `<button class="btn-task claim" onclick="claimTimedTask('${k}', ${t.reward})"><i class="fas fa-gift"></i> Claim ${t.reward} TK</button>`;
+                    } else if (session && session.status === 'watching') {
+                        const remaining = Math.max(0, Math.ceil((session.targetTime - Date.now()) / 1000));
+                        buttonHtml = `<button class="btn-task waiting" onclick="checkTimedTask('${k}', ${reqSeconds})"><i class="fas fa-clock"></i> ${remaining}s Left</button>`;
+                    } else {
+                        buttonHtml = `<button class="btn-task start" onclick="startTimedTask('${k}', '${t.url}', ${reqSeconds})"><i class="fas fa-play-circle"></i> Watch (${reqSeconds}s)</button>`;
+                    }
+
+                    bDiv.innerHTML += `
+                        <div class="list-cell" id="task-cell-${k}">
+                            <img src="${t.icon || 'https://via.placeholder.com/40'}">
+                            <div class="list-cell-info">
+                                <h4>${t.name}</h4>
+                                <p>+${t.reward} TK • ${reqSeconds}s watch required</p>
+                            </div>
+                            <div id="task-btn-wrap-${k}">${buttonHtml}</div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // Start watching video with timer tracking
+        function startTimedTask(taskId, url, seconds) {
+            const targetTime = Date.now() + (seconds * 1000);
+            localStorage.setItem(`task_session_${taskId}`, JSON.stringify({
+                status: 'watching',
+                targetTime: targetTime,
+                duration: seconds
+            }));
+
+            // Open Link
+            if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
+
+            renderTasks();
+            showPopup(`
+                <h3>Task Initiated!</h3>
+                <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.5;">Please watch or stay on the link for at least <b>${seconds} seconds</b>.<br><br>Return here when finished to claim your reward.</p>
+                <button onclick="closePopup()" class="btn-primary" style="margin-top:15px">Got It</button>
+            `);
+        }
+
+        // Check if user has finished watch duration
+        function checkTimedTask(taskId, reqSeconds) {
+            const session = JSON.parse(localStorage.getItem(`task_session_${taskId}`) || 'null');
+            if (!session) return;
+
+            const remaining = Math.ceil((session.targetTime - Date.now()) / 1000);
+            if (remaining > 0) {
+                showPopup(`
+                    <h3 style="color:var(--pending);"><i class="fas fa-exclamation-triangle"></i> Time Incomplete</h3>
+                    <p style="color:#cbd5e1; font-size:0.9rem; margin:10px 0;">You still need to stay on the page for <b>${remaining} more seconds</b> to qualify for the reward.</p>
+                    <button onclick="closePopup()" class="btn-primary">Return & Complete</button>
+                `);
+            } else {
+                session.status = 'ready';
+                localStorage.setItem(`task_session_${taskId}`, JSON.stringify(session));
+                renderTasks();
+            }
+        }
+
+        // Periodic background updater for active countdowns
+        function checkActiveTaskTimers() {
+            if (!appConfig.tasks) return;
+            let needsRerender = false;
+            Object.keys(appConfig.tasks).forEach(k => {
+                const session = JSON.parse(localStorage.getItem(`task_session_${k}`) || 'null');
+                if (session && session.status === 'watching') {
+                    if (Date.now() >= session.targetTime) {
+                        session.status = 'ready';
+                        localStorage.setItem(`task_session_${k}`, JSON.stringify(session));
+                        needsRerender = true;
+                    }
+                }
             });
+            if (needsRerender) renderTasks();
+        }
+
+        // Claim reward after valid watch time
+        async function claimTimedTask(taskId, reward) {
+            const session = JSON.parse(localStorage.getItem(`task_session_${taskId}`) || 'null');
+            if (!session || session.status !== 'ready') {
+                alert("Task verification failed. Please complete full duration.");
+                return;
+            }
+
+            showPopup(`<h3>Crediting Reward...</h3><div class="ring-spin" style="margin:20px auto"></div>`);
+            try {
+                await db.ref(`users/${tgUser.id}/completedTasks/${taskId}`).set(true);
+                await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(reward));
+                localStorage.removeItem(`task_session_${taskId}`);
+                closePopup();
+                showPopup(`
+                    <h2 style="color:var(--success);"><i class="fas fa-check-circle"></i> Success!</h2>
+                    <p style="color:#cbd5e1; margin:10px 0;"><b>+${reward} TK</b> has been added directly to your main vault!</p>
+                    <button onclick="closePopup()" class="btn-primary">Awesome!</button>
+                `);
+                renderAll();
+            } catch (e) {
+                closePopup();
+                alert("Failed to claim reward. Please try again.");
+            }
         }
 
         function renderDynamicLinks() {
@@ -823,19 +1013,6 @@
                 closePopup(); 
                 alert(e.message || "Failed to load advertisement.");
             }
-        }
-
-        function doTask(id, url, reward) {
-            if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
-            showPopup(`<h3>Auditing Task...</h3><p style="margin-top:5px; color:#cbd5e1;">Please hold for 5 seconds...</p>`);
-            setTimeout(async () => {
-                closePopup();
-                try {
-                    await db.ref(`users/${tgUser.id}/completedTasks/${id}`).set(true);
-                    await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(reward));
-                    renderAll();
-                } catch(e) { alert("Failed to credit reward."); }
-            }, 5000);
         }
 
         function copyRefLink() { 
