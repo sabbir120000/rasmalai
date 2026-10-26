@@ -95,6 +95,7 @@
             font-size: 0.95rem; font-weight: 700;
         }
         .balance-chip span { color: var(--primary); font-size: 1.15rem; font-weight: 800; }
+        .currency-icon-badge { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; border-radius: 50%; }
 
         /* Home Action Buttons */
         .home-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
@@ -174,15 +175,13 @@
         .list-cell-info h4 { font-size: 0.96rem; font-weight: 600; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .list-cell-info p { font-size: 0.8rem; color: var(--text-sub); }
 
-        .freq-badge {
-            font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; text-transform: uppercase;
-        }
+        .freq-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; }
         .freq-daily { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
         .freq-repeat { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
 
         /* Timed Task Button Variations */
         .btn-task {
-            padding: 8px 15px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
+            padding: 9px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
             border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
             transition: all 0.2s;
         }
@@ -192,8 +191,8 @@
         }
         .btn-task.claim {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #fff; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
-            animation: pulse-green 1.4s infinite;
+            color: #fff; box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+            animation: pulse-green 1.3s infinite;
         }
         .btn-task.waiting {
             background: rgba(245, 158, 11, 0.2); color: #f59e0b;
@@ -207,7 +206,7 @@
             100% { transform: scale(1); }
         }
 
-        /* Inputs */
+        /* Form Inputs */
         .form-group { margin-bottom: 16px; text-align: left; }
         .form-group label { display: block; margin-bottom: 6px; color: var(--text-sub); font-size: 0.86rem; font-weight: 500; }
         .form-control {
@@ -253,7 +252,7 @@
         .modal-card h2, .modal-card h3 { color: var(--primary); margin-bottom: 12px; }
         .modal-close { position: absolute; top: 12px; right: 15px; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; }
 
-        /* Spinner Loader */
+        /* Loader */
         #loader { position: fixed; inset: 0; background: #090d16; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .ring-spin { width: 44px; height: 44px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -271,7 +270,10 @@
                 <div class="verified-badge"><i class="fas fa-check"></i></div>
             </div>
             <h1 id="user-name">Guest User</h1>
-            <div class="balance-chip">Available: <span id="user-balance">0.00</span> TK</div>
+            <div class="balance-chip">
+                <span id="currency-icon-badge-box"></span>
+                Available: <span id="user-balance">0.00</span> <span class="cur-text">TK</span>
+            </div>
         </header>
 
         <main>
@@ -311,7 +313,7 @@
             <div id="tasks-page" class="page">
                 <div class="wallet-banner">
                     <h3>Vault Balance</h3>
-                    <h1><span id="earning-wallet">0.00</span> <small>TK</small></h1>
+                    <h1><span id="earning-wallet">0.00</span> <small class="cur-text">TK</small></h1>
                     <div class="progress-track"><div id="ad-progress-bar" class="progress-fill" style="width: 0%;"></div></div>
                 </div>
 
@@ -354,7 +356,7 @@
                             <input type="text" id="w-account" class="form-control" placeholder="Enter wallet address or phone number" required>
                         </div>
                         <div class="form-group">
-                            <label>Amount (TK)</label>
+                            <label id="withdraw-amount-label">Amount</label>
                             <input type="number" id="w-amount" class="form-control" placeholder="0.00" required>
                         </div>
                         <button type="submit" id="w-submit-btn" class="btn-primary" style="margin-top: 10px;">Submit Withdrawal</button>
@@ -425,6 +427,11 @@
             FR: { name: "France", flag: "🇫🇷" },
             IT: { name: "Italy", flag: "🇮🇹" }
         };
+
+        // 💵 DYNAMIC CURRENCY HELPER
+        function getCurrencyName() {
+            return appConfig.currencyName || appConfig.currencySymbol || 'TK';
+        }
 
         function hexToRgb(hex) {
             hex = (hex || '#00f2fe').replace('#', '');
@@ -509,8 +516,15 @@
                 loadLeaderboard();
                 loadHistory();
 
-                // Periodic check for video task countdowns
+                // Periodic check for wall-clock timer expiration
                 setInterval(checkActiveTaskTimers, 1000);
+
+                // Listen for window visibility change when returning from YouTube
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        checkActiveTaskTimers();
+                    }
+                });
 
             } catch (e) {
                 console.error(e);
@@ -608,6 +622,18 @@
         function renderAll() {
             if(!userState.id) return;
 
+            const cur = getCurrencyName();
+
+            // Set Currency Icon if available
+            const iconBadgeBox = document.getElementById('currency-icon-badge-box');
+            if (appConfig.currencyIcon) {
+                iconBadgeBox.innerHTML = `<img src="${appConfig.currencyIcon}" class="currency-icon-badge" alt="coin">`;
+            } else {
+                iconBadgeBox.innerHTML = '';
+            }
+
+            document.querySelectorAll('.cur-text').forEach(el => el.innerText = cur);
+
             document.getElementById('user-photo').src = userState.photoUrl || 'https://via.placeholder.com/80';
             document.getElementById('user-name').innerText = userState.firstName;
             document.getElementById('user-balance').innerText = (userState.balance || 0).toFixed(2);
@@ -622,6 +648,7 @@
             
             renderTasks(); renderWithdrawOptions();
             document.getElementById('ref-link-input').value = `https://t.me/${appConfig.botUsername || ''}/app?startapp=${tgUser.id}`;
+            document.getElementById('withdraw-amount-label').innerText = `Amount (${cur})`;
             renderHistory();
             if (appConfig.appRules) document.getElementById('rules-area').innerHTML = `<div class="glass-card"><h3 style="margin-bottom:10px;">Platform Guidelines</h3><p style="font-size:0.86rem; color:#cbd5e1; white-space: pre-wrap; line-height: 1.6;">${appConfig.appRules}</p></div>`;
             renderDynamicLinks();
@@ -667,7 +694,7 @@
             }
         }
 
-        // 🔥 TIMED TASK SYSTEM (DAILY VS UNLIMITED SUPPORT)
+        // 🔥 BULLETPROOF VIDEO WATCH TIMER SYSTEM 🔥
         function renderTasks() {
             const adDiv = document.getElementById('ad-task-area'); const now = Date.now();
             const breakTime = userState.breakUntil && now < userState.breakUntil;
@@ -679,27 +706,35 @@
 
             const bDiv = document.getElementById('bonus-task-area'); bDiv.innerHTML = '';
             const todayStr = new Date().toISOString().slice(0, 10);
+            const cur = getCurrencyName();
 
             if (appConfig.tasks) {
                 Object.keys(appConfig.tasks).forEach(k => {
                     const t = appConfig.tasks[k];
                     const isUnlimited = (t.frequency === 'unlimited');
                     
-                    // Daily task checks if completed today
                     const taskDoneRecord = userState.completedTasks && userState.completedTasks[k];
                     const isDoneToday = !isUnlimited && (taskDoneRecord === todayStr || taskDoneRecord === true);
 
                     const reqSeconds = parseInt(t.timer) || 15;
-                    const session = JSON.parse(localStorage.getItem(`task_session_${k}`) || 'null');
+                    const session = JSON.parse(localStorage.getItem(`task_watch_${k}`) || 'null');
 
                     let buttonHtml = '';
                     if (isDoneToday) {
                         buttonHtml = `<button class="btn-task" disabled><i class="fas fa-check-double"></i> Completed Today</button>`;
                     } else if (session && session.status === 'ready') {
-                        buttonHtml = `<button class="btn-task claim" onclick="claimTimedTask('${k}', ${t.reward}, ${isUnlimited})"><i class="fas fa-gift"></i> Claim ${t.reward} TK</button>`;
+                        buttonHtml = `<button class="btn-task claim" onclick="claimTimedTask('${k}', ${t.reward}, ${isUnlimited})"><i class="fas fa-gift"></i> Claim ${t.reward} ${cur}</button>`;
                     } else if (session && session.status === 'watching') {
-                        const remaining = Math.max(0, Math.ceil((session.targetTime - Date.now()) / 1000));
-                        buttonHtml = `<button class="btn-task waiting" onclick="checkTimedTask('${k}', ${reqSeconds})"><i class="fas fa-clock"></i> ${remaining}s Left</button>`;
+                        const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+                        const remaining = Math.max(0, reqSeconds - elapsed);
+
+                        if (remaining <= 0) {
+                            session.status = 'ready';
+                            localStorage.setItem(`task_watch_${k}`, JSON.stringify(session));
+                            buttonHtml = `<button class="btn-task claim" onclick="claimTimedTask('${k}', ${t.reward}, ${isUnlimited})"><i class="fas fa-gift"></i> Claim ${t.reward} ${cur}</button>`;
+                        } else {
+                            buttonHtml = `<button class="btn-task waiting" onclick="checkEarlyReturn('${k}', ${reqSeconds})"><i class="fas fa-clock"></i> ${remaining}s Left</button>`;
+                        }
                     } else {
                         buttonHtml = `<button class="btn-task start" onclick="startTimedTask('${k}', '${t.url}', ${reqSeconds})"><i class="fas fa-play-circle"></i> Watch (${reqSeconds}s)</button>`;
                     }
@@ -713,7 +748,7 @@
                             <img src="${t.icon || 'https://via.placeholder.com/40'}">
                             <div class="list-cell-info">
                                 <h4>${t.name} ${freqBadge}</h4>
-                                <p>+${t.reward} TK • ${reqSeconds}s video watch required</p>
+                                <p>+${t.reward} ${cur} • Watch for ${reqSeconds}s in YouTube</p>
                             </div>
                             <div id="task-btn-wrap-${k}">${buttonHtml}</div>
                         </div>
@@ -722,54 +757,59 @@
             }
         }
 
-        // Start video task with timer
+        // Start video and log exact wall-clock start time
         function startTimedTask(taskId, url, seconds) {
-            const targetTime = Date.now() + (seconds * 1000);
-            localStorage.setItem(`task_session_${taskId}`, JSON.stringify({
-                status: 'watching',
-                targetTime: targetTime,
-                duration: seconds
-            }));
+            const now = Date.now();
+            const session = {
+                taskId: taskId,
+                startTime: now,
+                reqSeconds: seconds,
+                status: 'watching'
+            };
+            localStorage.setItem(`task_watch_${taskId}`, JSON.stringify(session));
 
             if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
             renderTasks();
 
             showPopup(`
-                <h3>Video Started!</h3>
-                <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.6;">You must watch the video for at least <b>${seconds} seconds</b>.<br><br>⚠️ <b>Warning:</b> If you return before the timer ends, no coins will be credited!</p>
-                <button onclick="closePopup()" class="btn-primary" style="margin-top:15px">Watching Now</button>
+                <h3><i class="fas fa-video"></i> Video Started!</h3>
+                <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.6;">Please watch the full video on YouTube for at least <b>${seconds} seconds</b>.<br><br>⚠️ <b>Strict Warning:</b> If you return before completing the full ${seconds}s, coins will NOT be added!</p>
+                <button onclick="closePopup()" class="btn-primary" style="margin-top:15px">Watching Video Now</button>
             `);
         }
 
-        // Check if user returned before required time
-        function checkTimedTask(taskId, reqSeconds) {
-            const session = JSON.parse(localStorage.getItem(`task_session_${taskId}`) || 'null');
+        // Warning when user clicks early before required time passes
+        function checkEarlyReturn(taskId, reqSeconds) {
+            const session = JSON.parse(localStorage.getItem(`task_watch_${taskId}`) || 'null');
             if (!session) return;
 
-            const remaining = Math.ceil((session.targetTime - Date.now()) / 1000);
+            const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+            const remaining = reqSeconds - elapsed;
+
             if (remaining > 0) {
                 showPopup(`
                     <h3 style="color:var(--danger);"><i class="fas fa-ban"></i> Watch Time Incomplete!</h3>
-                    <p style="color:#cbd5e1; font-size:0.9rem; margin:10px 0; line-height:1.5;">You returned too early! You still need to watch for <b>${remaining} more seconds</b>.<br><br>Rewards cannot be claimed until the timer runs out.</p>
-                    <button onclick="closePopup()" class="btn-primary">Continue Watching</button>
+                    <p style="color:#cbd5e1; font-size:0.92rem; margin:10px 0; line-height:1.6;">You only watched for <b>${elapsed} seconds</b>!<br>You still need to stay on YouTube for <b>${remaining} more seconds</b>.<br><br>Early returns do not qualify for rewards.</p>
+                    <button onclick="closePopup()" class="btn-primary">Return & Finish Watching</button>
                 `);
             } else {
                 session.status = 'ready';
-                localStorage.setItem(`task_session_${taskId}`, JSON.stringify(session));
+                localStorage.setItem(`task_watch_${taskId}`, JSON.stringify(session));
                 renderTasks();
             }
         }
 
-        // Periodic timer inspector
+        // Real-Time Background Inspector
         function checkActiveTaskTimers() {
             if (!appConfig.tasks) return;
             let needsRerender = false;
             Object.keys(appConfig.tasks).forEach(k => {
-                const session = JSON.parse(localStorage.getItem(`task_session_${k}`) || 'null');
+                const session = JSON.parse(localStorage.getItem(`task_watch_${k}`) || 'null');
                 if (session && session.status === 'watching') {
-                    if (Date.now() >= session.targetTime) {
+                    const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+                    if (elapsed >= session.reqSeconds) {
                         session.status = 'ready';
-                        localStorage.setItem(`task_session_${k}`, JSON.stringify(session));
+                        localStorage.setItem(`task_watch_${k}`, JSON.stringify(session));
                         needsRerender = true;
                     }
                 }
@@ -777,35 +817,45 @@
             if (needsRerender) renderTasks();
         }
 
-        // Claim reward & handle daily or unlimited repeats
+        // Claim reward after validating real passed time
         async function claimTimedTask(taskId, reward, isUnlimited) {
-            const session = JSON.parse(localStorage.getItem(`task_session_${taskId}`) || 'null');
-            if (!session || session.status !== 'ready') {
-                alert("Security check failed: Full watch time was not completed.");
+            const session = JSON.parse(localStorage.getItem(`task_watch_${taskId}`) || 'null');
+            
+            // Hard verification: Was the user actually away for the full duration?
+            if (!session) {
+                alert("Security check failed: No active task record found.");
                 return;
             }
 
-            showPopup(`<h3>Crediting Vault...</h3><div class="ring-spin" style="margin:20px auto"></div>`);
+            const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+            if (elapsed < session.reqSeconds) {
+                localStorage.removeItem(`task_watch_${taskId}`);
+                renderTasks();
+                alert(`Task failed: You only watched for ${elapsed}s out of required ${session.reqSeconds}s.`);
+                return;
+            }
+
+            showPopup(`<h3>Verifying Watch Session...</h3><div class="ring-spin" style="margin:20px auto"></div>`);
             try {
+                const cur = getCurrencyName();
                 const todayStr = new Date().toISOString().slice(0, 10);
 
                 if (!isUnlimited) {
-                    // Mark completed for today
                     await db.ref(`users/${tgUser.id}/completedTasks/${taskId}`).set(todayStr);
                 }
 
                 await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(reward));
-                localStorage.removeItem(`task_session_${taskId}`);
+                localStorage.removeItem(`task_watch_${taskId}`);
                 closePopup();
 
                 const repeatText = isUnlimited 
-                    ? "This is an unlimited task! You can watch it again right away." 
-                    : "This daily task is completed. Come back tomorrow for more!";
+                    ? "This task is repeatable! You can watch it again immediately." 
+                    : "Daily limit reached for this task. Come back tomorrow!";
 
                 showPopup(`
                     <h2 style="color:var(--success);"><i class="fas fa-check-circle"></i> Rewarded!</h2>
-                    <p style="color:#cbd5e1; margin:10px 0;"><b>+${reward} TK</b> has been credited successfully.<br><br><small style="color:var(--text-sub);">${repeatText}</small></p>
-                    <button onclick="closePopup()" class="btn-primary">Collect & Close</button>
+                    <p style="color:#cbd5e1; margin:10px 0;"><b>+${reward} ${cur}</b> has been added to your vault!<br><br><small style="color:var(--text-sub);">${repeatText}</small></p>
+                    <button onclick="closePopup()" class="btn-primary">Awesome</button>
                 `);
                 renderAll();
             } catch (e) {
@@ -841,20 +891,22 @@
 
         function renderWithdrawOptions() {
             const s = document.getElementById('w-method'); s.innerHTML = '';
+            const cur = getCurrencyName();
             if (appConfig.withdrawMethods) {
                 s.innerHTML = `<option value="" disabled selected>Select Gateway</option>`;
-                appConfig.withdrawMethods.forEach(m => s.innerHTML += `<option value="${m.name}">${m.name} (Min: ${m.min})</option>`);
+                appConfig.withdrawMethods.forEach(m => s.innerHTML += `<option value="${m.name}">${m.name} (Min: ${m.min} ${cur})</option>`);
             }
         }
 
         function renderHistory() {
             const d = document.getElementById('history-list'); d.innerHTML = '';
+            const cur = getCurrencyName();
             if(!transactions || transactions.length === 0) { d.innerHTML = '<p style="text-align:center; color:#94a3b8">No transactions yet.</p>'; return; }
             transactions.forEach(t => {
                 let statusText = t.status || 'pending';
                 let c = statusText === 'completed' ? 'var(--success)' : (statusText === 'pending' ? 'var(--pending)' : 'var(--danger)');
                 let dateStr = t.timestamp ? new Date(t.timestamp).toLocaleDateString() : 'Recent';
-                d.innerHTML += `<div class="list-cell"><div class="list-cell-info"><h4>${t.amount} TK - ${t.method}</h4><p>${dateStr}</p></div><span style="color:${c}; font-size:0.8rem; font-weight:800; text-transform:uppercase">${statusText}</span></div>`;
+                d.innerHTML += `<div class="list-cell"><div class="list-cell-info"><h4>${t.amount} ${cur} - ${t.method}</h4><p>${dateStr}</p></div><span style="color:${c}; font-size:0.8rem; font-weight:800; text-transform:uppercase">${statusText}</span></div>`;
             });
         }
 
@@ -1023,10 +1075,11 @@
             const method = document.getElementById('w-method').value;
             const acc = document.getElementById('w-account').value;
             const amt = parseFloat(document.getElementById('w-amount').value);
+            const cur = getCurrencyName();
             
             const conf = appConfig.withdrawMethods?.find(m => m.name === method);
             if (!conf) return;
-            if (amt < conf.min) { alert(`Minimum payout limit: ${conf.min} TK`); return; }
+            if (amt < conf.min) { alert(`Minimum payout limit: ${conf.min} ${cur}`); return; }
             if (amt > userState.balance) { alert("Insufficient account funds!"); return; }
 
             const btn = document.getElementById('w-submit-btn'); 
