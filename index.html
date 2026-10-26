@@ -42,7 +42,8 @@
             background-attachment: fixed;
         }
 
-        #app { max-width: 460px; margin: 0 auto; padding-bottom: 96px; position: relative; }
+        /* Fixed padding so last item is never hidden behind bottom bar */
+        #app { max-width: 460px; margin: 0 auto; padding-bottom: 115px; position: relative; }
         .page { display: none; padding: 16px; animation: enterSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .page.active { display: block; }
         @keyframes enterSlide { from { opacity: 0; transform: translateY(10px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -163,27 +164,27 @@
         .btn-primary:active { transform: scale(0.98); }
         .btn-primary:disabled { background: #1e293b !important; color: #64748b; box-shadow: none; cursor: not-allowed; }
 
-        /* Task Cell with Frequency Badges */
+        /* Task Cell with Fixed Overflow & Alignment */
         .list-cell {
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
             background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
             border-radius: 16px; padding: 14px 16px; margin-bottom: 12px;
             transition: background 0.2s;
         }
-        .list-cell img { width: 44px; height: 44px; border-radius: 12px; margin-right: 14px; object-fit: cover; }
-        .list-cell-info { flex: 1; }
-        .list-cell-info h4 { font-size: 0.96rem; font-weight: 600; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-        .list-cell-info p { font-size: 0.8rem; color: var(--text-sub); }
+        .list-cell img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+        .list-cell-info { flex: 1; min-width: 0; }
+        .list-cell-info h4 { font-size: 0.94rem; font-weight: 600; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; word-break: break-word; }
+        .list-cell-info p { font-size: 0.78rem; color: var(--text-sub); }
 
-        .freq-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; }
+        .freq-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; white-space: nowrap; }
         .freq-daily { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
         .freq-repeat { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
 
         /* Timed Task Button Variations */
         .btn-task {
-            padding: 9px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
+            padding: 9px 15px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
             border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
-            transition: all 0.2s;
+            transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
         }
         .btn-task.start {
             background: rgba(var(--p-rgb), 0.15); color: var(--primary);
@@ -230,13 +231,16 @@
         .chart-col { width: 10%; background: linear-gradient(180deg, var(--primary) 0%, rgba(var(--p-rgb), 0.05) 100%); border-radius: 6px 6px 0 0; }
         .chart-dates { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.72rem; color: var(--text-sub); }
 
-        /* Floating Nav Bar */
+        /* 🔥 DOCKED BOTTOM BAR - NO CONTENT SHOWS UNDERNEATH 🔥 */
         .floating-nav {
-            position: fixed; bottom: 14px; left: 16px; right: 16px; max-width: 428px; margin: 0 auto;
-            background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border); border-radius: 24px;
-            display: flex; justify-content: space-around; padding: 10px 4px; z-index: 100;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: fixed; bottom: 0; left: 0; right: 0; max-width: 460px; margin: 0 auto;
+            background: #090e1a; /* Solid dark background */
+            border-top: 1px solid var(--border);
+            border-radius: 22px 22px 0 0;
+            display: flex; justify-content: space-around;
+            padding: 12px 6px calc(14px + env(safe-area-inset-bottom, 0px));
+            z-index: 9999;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.7);
         }
         .nav-link {
             background: none; border: none; color: #64748b; font-size: 0.75rem;
@@ -247,13 +251,13 @@
         .nav-link.active { color: var(--primary); transform: translateY(-2px); }
 
         /* Popup Modal */
-        .popup-modal { position: fixed; inset: 0; background: rgba(9, 13, 22, 0.88); backdrop-filter: blur(8px); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .popup-modal { position: fixed; inset: 0; background: rgba(9, 13, 22, 0.88); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; }
         .modal-card { background: #161e31; width: 88%; max-width: 350px; padding: 25px; border-radius: 22px; border: 1px solid var(--border); text-align: center; position: relative; }
         .modal-card h2, .modal-card h3 { color: var(--primary); margin-bottom: 12px; }
         .modal-close { position: absolute; top: 12px; right: 15px; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; }
 
         /* Loader */
-        #loader { position: fixed; inset: 0; background: #090d16; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loader { position: fixed; inset: 0; background: #090d16; z-index: 10001; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .ring-spin { width: 44px; height: 44px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -372,7 +376,7 @@
             </div>
         </main>
 
-        <!-- Floating Navigation -->
+        <!-- Solid Docked Bottom Navigation -->
         <nav class="floating-nav">
             <button class="nav-link active" onclick="navTo('home-page', this)"><i class="fas fa-home"></i> Home</button>
             <button class="nav-link" onclick="navTo('tasks-page', this)"><i class="fas fa-bolt"></i> Tasks</button>
@@ -428,7 +432,6 @@
             IT: { name: "Italy", flag: "🇮🇹" }
         };
 
-        // 💵 DYNAMIC CURRENCY HELPER
         function getCurrencyName() {
             return appConfig.currencyName || appConfig.currencySymbol || 'TK';
         }
@@ -516,10 +519,8 @@
                 loadLeaderboard();
                 loadHistory();
 
-                // Periodic check for wall-clock timer expiration
                 setInterval(checkActiveTaskTimers, 1000);
 
-                // Listen for window visibility change when returning from YouTube
                 document.addEventListener('visibilitychange', () => {
                     if (document.visibilityState === 'visible') {
                         checkActiveTaskTimers();
@@ -624,7 +625,6 @@
 
             const cur = getCurrencyName();
 
-            // Set Currency Icon if available
             const iconBadgeBox = document.getElementById('currency-icon-badge-box');
             if (appConfig.currencyIcon) {
                 iconBadgeBox.innerHTML = `<img src="${appConfig.currencyIcon}" class="currency-icon-badge" alt="coin">`;
@@ -694,7 +694,6 @@
             }
         }
 
-        // 🔥 BULLETPROOF VIDEO WATCH TIMER SYSTEM 🔥
         function renderTasks() {
             const adDiv = document.getElementById('ad-task-area'); const now = Date.now();
             const breakTime = userState.breakUntil && now < userState.breakUntil;
@@ -757,7 +756,6 @@
             }
         }
 
-        // Start video and log exact wall-clock start time
         function startTimedTask(taskId, url, seconds) {
             const now = Date.now();
             const session = {
@@ -778,7 +776,6 @@
             `);
         }
 
-        // Warning when user clicks early before required time passes
         function checkEarlyReturn(taskId, reqSeconds) {
             const session = JSON.parse(localStorage.getItem(`task_watch_${taskId}`) || 'null');
             if (!session) return;
@@ -799,7 +796,6 @@
             }
         }
 
-        // Real-Time Background Inspector
         function checkActiveTaskTimers() {
             if (!appConfig.tasks) return;
             let needsRerender = false;
@@ -817,11 +813,9 @@
             if (needsRerender) renderTasks();
         }
 
-        // Claim reward after validating real passed time
         async function claimTimedTask(taskId, reward, isUnlimited) {
             const session = JSON.parse(localStorage.getItem(`task_watch_${taskId}`) || 'null');
             
-            // Hard verification: Was the user actually away for the full duration?
             if (!session) {
                 alert("Security check failed: No active task record found.");
                 return;
